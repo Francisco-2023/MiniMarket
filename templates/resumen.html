@@ -1,0 +1,130 @@
+{% extends 'base.html' %}
+{% block title %}📊 Reporte Financiero{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <h2 class="mb-4 text-primary">📊 Reporte Financiero</h2>
+
+    <!-- Formulario de filtro por fecha -->
+    <form method="POST" class="row g-3 mb-4">
+        <div class="col-md-5">
+            <label for="fecha_inicio" class="form-label">Desde</label>
+            <input type="date" name="fecha_inicio" id="fecha_inicio" class="form-control" value="{{ fecha_inicio }}">
+        </div>
+        <div class="col-md-5">
+            <label for="fecha_fin" class="form-label">Hasta</label>
+            <input type="date" name="fecha_fin" id="fecha_fin" class="form-control" value="{{ fecha_fin }}">
+        </div>
+        <div class="col-md-2 align-self-end">
+            <button type="submit" class="btn btn-primary w-100">Filtrar</button>
+        </div>
+    </form>
+
+    <!-- Gráficos -->
+    <div class="row justify-content-center">
+        <div class="col-md-6 mb-4">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title text-center">📊 Ingresos vs Egresos por Mes</h5>
+                    <div class="ratio ratio-4x3">
+                        <canvas id="barChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 mb-4">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title text-center">🥧 Distribución de Movimiento</h5>
+                    <div class="ratio ratio-4x3">
+                        <canvas id="pieChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Historial de Movimientos -->
+    <h4 class="mt-4 mb-2">🧾 Historial de Movimientos</h4>
+    <div class="table-responsive">
+        <table class="table table-bordered table-hover">
+            <thead class="table-dark">
+                <tr>
+                    <th>Fecha</th>
+                    <th>Tipo</th>
+                    <th>Concepto</th>
+                    <th class="text-end">Monto</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for m in movimientos %}
+                <tr>
+                    <td>{{ m.fecha.strftime('%d/%m/%Y %H:%M') if m.fecha else 'N/A' }}</td>
+                    <td>{{ m.tipo }}</td>
+                    <td>{{ m.concepto }}</td>
+                    <td class="text-end">$ {{ "%.2f"|format(m.monto) }}</td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="4" class="text-center text-muted">No hay movimientos registrados.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Chart.js CDN -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    const ingresosPorMes = {{ ingresos_mes | tojson }};
+    const egresosPorMes = {{ egresos_mes | tojson }};
+    const meses = {{ meses | tojson }};
+
+    const ctxBar = document.getElementById('barChart').getContext('2d');
+    new Chart(ctxBar, {
+        type: 'bar',
+        data: {
+            labels: meses,
+            datasets: [
+                {
+                    label: 'Ingresos',
+                    backgroundColor: '#28a745',
+                    data: ingresosPorMes
+                },
+                {
+                    label: 'Egresos',
+                    backgroundColor: '#dc3545',
+                    data: egresosPorMes
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { position: 'top' }
+            }
+        }
+    });
+
+    const ctxPie = document.getElementById('pieChart').getContext('2d');
+    new Chart(ctxPie, {
+        type: 'pie',
+        data: {
+            labels: ['Ingresos', 'Egresos'],
+            datasets: [{
+                data: [{{ ingresos }}, {{ egresos }}],
+                backgroundColor: ['#198754', '#dc3545']
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { position: 'top' }
+            }
+        }
+    });
+</script>
+{% endblock %}

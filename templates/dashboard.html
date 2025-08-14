@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+{% block title %}🏪 Dashboard Minimarket{% endblock %}
+{% block content %}
+<div class="container py-5">
+  <div class="text-center mb-5">
+    <h1 class="display-5 fw-bold text-primary">
+  Bienvenido,
+  {% if '@' in usuario %}
+    {{ usuario.split('@')[0] | capitalize }}
+  {% else %}
+    {{ usuario | capitalize }}
+  {% endif %}
+</h1>
+<p class="lead">Este es tu panel principal del Minimarket.</p>
+  </div>
+
+  <div class="row g-4">
+    <div class="col-md-4">
+      <div class="card shadow-sm border-0">
+        <div class="card-body text-center">
+          <h5 class="card-title">🛒 Productos</h5>
+          <p class="card-text">Administra tu inventario</p>
+          <a href="{{ url_for('productos') }}" class="btn btn-outline-primary w-100">Ir a Productos</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-4">
+      <div class="card shadow-sm border-0">
+        <div class="card-body text-center">
+          <h5 class="card-title">📦 Ventas</h5>
+          <p class="card-text">Historial y facturación</p>
+          <a href="#" class="btn btn-outline-success w-100">Ver Ventas</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-4">
+      <div class="card shadow-sm border-0">
+        <div class="card-body text-center">
+          <h5 class="card-title">👤 Usuarios</h5>
+          <p class="card-text">Gestión de usuarios y roles</p>
+          <a href="#" class="btn btn-outline-secondary w-100">Gestionar Usuarios</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

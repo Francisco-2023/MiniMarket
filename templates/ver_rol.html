@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+{% block title %}Rol de Pago{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h3 class="text-primary">🧾 Detalle del Rol de Pago</h3>
+    <button class="btn btn-secondary" onclick="window.print()">🖨️ Imprimir</button>
+  </div>
+
+  <!-- Logo y Empresa -->
+  <div class="text-center mb-4">
+    <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Logo" style="height: 80px;">
+    <h5 class="mt-2">Empresa Bramonet S.A.</h5>
+  </div>
+
+  <!-- Tabla de Detalles -->
+  <table class="table table-bordered">
+    <tbody>
+      <tr>
+        <th>Empleado</th>
+        <td>{{ rol.empleado }}</td>
+      </tr>
+      <tr>
+        <th>Cargo</th>
+        <td>{{ rol.cargo }}</td>
+      </tr>
+      <tr>
+        <th>Fecha de Pago</th>
+        <td>{{ rol.fecha_pago }}</td>
+      </tr>
+      <tr>
+        <th>Sueldo Base</th>
+        <td>$ {{ '%.2f' | format(rol.sueldo) }}</td>
+      </tr>
+      <tr>
+        <th>Bono</th>
+        <td>$ {{ '%.2f' | format(rol.bono) }}</td>
+      </tr>
+      <tr>
+        <th>Descuento</th>
+        <td>$ {{ '%.2f' | format(rol.descuento) }}</td>
+      </tr>
+      <tr class="table-light">
+        <th><strong>Total a Pagar</strong></th>
+        <td><strong>$ {{ '%.2f' | format(rol.total) }}</strong></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="text-center mt-5">
+    <p>Gracias por su trabajo.</p>
+    <small>Documento generado automáticamente por el sistema</small>
+  </div>
+</div>
+{% endblock %}

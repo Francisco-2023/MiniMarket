@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+{% block title %}📦 Historial de Compras{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <h2 class="mb-4 text-primary">📦 Historial de Compras</h2>
+
+  {% if compras %}
+  <div class="table-responsive">
+    <table class="table table-bordered table-hover align-middle">
+      <thead class="table-light">
+        <tr>
+          <th>ID Compra</th>
+          <th>Fecha</th>
+          <th>Usuario</th>
+          <th>Total</th>
+          <th>Detalle</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for compra in compras %}
+        <tr>
+          <td>{{ compra.id }}</td>
+          <td>{{ compra.fecha_formateada if compra.fecha_formateada else compra.fecha }}</td>
+          <td>{{ compra.usuario }}</td>
+          <td>$ {{ '%.2f' | format(compra.total) }}</td>
+          <td>
+            <button class="btn btn-sm btn-info" data-bs-toggle="collapse" data-bs-target="#detalleCompra{{ compra.id }}">
+              Ver detalle
+            </button>
+            <div class="collapse mt-2" id="detalleCompra{{ compra.id }}">
+              <ul class="list-group">
+                {% for item in compra.detalle %}
+                <li class="list-group-item">
+                  <strong>{{ item.nombre }}</strong> - Cantidad: {{ item.cantidad }}, Precio unitario: ${{ '%.2f' | format(item.precio_unitario) }}, Subtotal: ${{ '%.2f' | format(item.subtotal) }}
+                </li>
+                {% endfor %}
+              </ul>
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <p>No hay registros de compras.</p>
+  {% endif %}
+</div>
+{% endblock %}

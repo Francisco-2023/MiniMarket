@@ -1,0 +1,90 @@
+{% extends 'base.html' %}
+{% block title %}📄 Facturas Guardadas{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <h2 class="mb-4 text-primary">📄 Facturas Guardadas</h2>
+
+  <div class="row g-4">
+    {% for f in facturas %}
+    <div class="col-12 col-md-6 col-lg-4">
+      <div class="card shadow border-primary h-100">
+        <div class="card-header bg-primary text-white">
+          <h5 class="mb-0">🧾 {{ f.cliente }}</h5>
+        </div>
+        <div class="card-body">
+          <p class="mb-1"><strong>Fecha:</strong> {{ f.fecha.strftime('%d/%m/%Y %H:%M') if f.fecha else 'N/A' }}</p>
+          <p class="mb-1"><strong>Total:</strong> ${{ "%.2f"|format(f.total) }}</p>
+
+          <hr>
+          <h6 class="text-muted">Detalles:</h6>
+          <ul class="list-group list-group-flush">
+            {% for item in f.detalles %}
+            <li class="list-group-item small">
+              <div class="fw-semibold">{{ item.nombre }}</div>
+              <div class="d-flex justify-content-between">
+                <span>{{ item.cantidad }} x ${{ "%.2f"|format(item.precio_unitario) }}</span>
+                <span class="fw-bold">$ {{ "%.2f"|format(item.subtotal) }}</span>
+              </div>
+            </li>
+            {% endfor %}
+          </ul>
+        </div>
+        <div class="card-footer text-end">
+          <button class="btn btn-outline-secondary btn-sm" data-bs-toggle="modal" data-bs-target="#detalleModal{{ f.id }}">
+            Ver Completo
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal Detalle completo -->
+    <div class="modal fade" id="detalleModal{{ f.id }}" tabindex="-1" aria-labelledby="detalleModalLabel{{ f.id }}" aria-hidden="true">
+      <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <div class="modal-content">
+          <div class="modal-header bg-primary text-white">
+            <h5 class="modal-title" id="detalleModalLabel{{ f.id }}">🧾 Factura de {{ f.cliente }}</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+          </div>
+          <div class="modal-body">
+            <p><strong>Fecha:</strong> {{ f.fecha.strftime('%d/%m/%Y %H:%M') if f.fecha else 'N/A' }}</p>
+            <table class="table table-bordered table-hover align-middle">
+              <thead class="table-light">
+                <tr>
+                  <th>Producto</th>
+                  <th class="text-center">Cantidad</th>
+                  <th class="text-end">Precio Unitario</th>
+                  <th class="text-end">Subtotal</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for item in f.detalles %}
+                <tr>
+                  <td>{{ item.nombre }}</td>
+                  <td class="text-center">{{ item.cantidad }}</td>
+                  <td class="text-end">$ {{ "%.2f"|format(item.precio_unitario) }}</td>
+                  <td class="text-end">$ {{ "%.2f"|format(item.subtotal) }}</td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+            <div class="text-end mt-3">
+              <strong>Total: $ {{ "%.2f"|format(f.total) }}</strong>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% else %}
+    <div class="col-12">
+      <div class="alert alert-info text-center">
+        No hay facturas guardadas.
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

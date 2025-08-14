@@ -1,0 +1,331 @@
+{% extends 'base.html' %}
+{% block title %}📦 Productos{% endblock %}
+
+{% block content %}
+<style>
+  /* Estilos para las cartas de producto */
+  .card-product {
+    max-width: 280px;
+    height: 380px;
+    margin: auto;
+    border-radius: 1rem;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    background: #fff;
+    overflow: hidden;
+  }
+  .card-product:hover {
+    transform: translateY(-7px);
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.18);
+  }
+  .card-product-img-container {
+    width: 100%;
+    height: 180px;
+    background-color: #f8f9fa;
+    border-top-left-radius: 1rem;
+    border-top-right-radius: 1rem;
+    overflow: hidden;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  .card-product-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+  .text-truncate-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .card-actions {
+    margin-top: auto;
+    display: flex;
+    gap: 0.5rem;
+  }
+  .card-actions button {
+    flex: 1;
+  }
+</style>
+
+<div class="container mt-5">
+  <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+    <h2 class="text-primary fw-bold">📦 Lista de Productos</h2>
+    <button class="btn btn-success fw-semibold shadow-sm" data-bs-toggle="modal" data-bs-target="#modalNuevoProducto" type="button">
+      <i class="bi bi-plus-lg"></i> Nuevo Producto
+    </button>
+  </div>
+
+  <div class="row justify-content-center g-4">
+    {% for p in productos %}
+    <div class="col-12 col-sm-6 col-md-4 col-lg-3">
+      <div class="card card-product h-100 shadow-sm animate__animated animate__fadeInUp">
+        <div class="card-product-img-container">
+          <img src="{{ p.imagen if p.imagen else url_for('static', filename='img/default-product.png') }}"
+            alt="{{ p.nombre }}" class="card-product-img" loading="lazy" />
+        </div>
+        <div class="card-body d-flex flex-column">
+          <h5 class="card-title fw-bold text-truncate-2" title="{{ p.nombre }}">
+            <i class="bi bi-tag-fill text-success me-1"></i>{{ p.nombre }}
+          </h5>
+          <p class="card-text mb-1">
+            <i class="bi bi-currency-dollar me-1"></i><strong>Precio Proveedor:</strong> 
+            <span class="text-primary">${{ "%.2f"|format(p.precio_proveedor or 0) }}</span>
+          </p>
+          <p class="card-text mb-1">
+            <i class="bi bi-currency-dollar me-1"></i><strong>Precio Venta:</strong> 
+            <span class="text-success">${{ "%.2f"|format(p.precio_salida or 0) }}</span>
+          </p>
+          <p class="card-text mb-1">
+            <i class="bi bi-box-seam me-1"></i><strong>Stock:</strong> 
+            <span class="{{ 'text-danger' if p.stock <= 5 else 'text-muted' }}">{{ p.stock or 0 }}</span>
+          </p>
+          <p class="card-text mb-1"><i class="bi bi-tags me-1"></i><strong>Categoría:</strong> {{ p.categoria or 'Sin categoría' }}</p>
+          <p class="card-text text-truncate" title="{{ p.descripcion or 'Sin descripción' }}">{{ p.descripcion or 'Sin descripción' }}</p>
+          <p class="card-text small text-muted mb-3"><i class="bi bi-upc-scan me-1"></i><strong>Código:</strong> {{ p.codigo or '' }}</p>
+
+          <div class="card-actions">
+            <button class="btn btn-outline-warning fw-semibold" data-bs-toggle="modal" data-bs-target="#modalEditar{{ p.id }}" type="button" aria-label="Editar producto {{ p.nombre }}">
+              <i class="bi bi-pencil-fill"></i> Editar
+            </button>
+            <button class="btn btn-outline-danger fw-semibold" data-bs-toggle="modal" data-bs-target="#modalEliminar{{ p.id }}" type="button" aria-label="Eliminar producto {{ p.nombre }}">
+              <i class="bi bi-trash-fill"></i> Eliminar
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal Editar Producto -->
+    <div class="modal fade" id="modalEditar{{ p.id }}" tabindex="-1" aria-labelledby="editarLabel{{ p.id }}" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered modal-lg">
+        <form class="modal-content" method="POST" action="{{ url_for('editar_producto', producto_id=p.id) }}" enctype="multipart/form-data" novalidate>
+          <div class="modal-header bg-warning text-dark">
+            <h5 class="modal-title" id="editarLabel{{ p.id }}">Editar Producto</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+          </div>
+          <div class="modal-body">
+            <div class="row g-3">
+              <div class="col-md-6">
+                <label for="codigoInterno{{ p.id }}" class="form-label">Código Interno</label>
+                <input id="codigoInterno{{ p.id }}" type="text" class="form-control" name="codigo_interno" value="{{ p.codigo_interno or '' }}">
+              </div>
+              <div class="col-md-6">
+                <label for="codigo{{ p.id }}" class="form-label">Código de Barras</label>
+                <input id="codigo{{ p.id }}" type="text" class="form-control" name="codigo" value="{{ p.codigo or '' }}">
+              </div>
+              <div class="col-md-6">
+                <label for="nombre{{ p.id }}" class="form-label">Nombre</label>
+                <input id="nombre{{ p.id }}" type="text" class="form-control" name="nombre" value="{{ p.nombre or '' }}" required>
+              </div>
+              <div class="col-md-6">
+                <label for="marca{{ p.id }}" class="form-label">Marca</label>
+                <input id="marca{{ p.id }}" type="text" class="form-control" name="marca" value="{{ p.marca or '' }}">
+              </div>
+              <div class="col-md-4">
+                <label for="precioProveedor{{ p.id }}" class="form-label">Precio Proveedor ($)</label>
+                <input id="precioProveedor{{ p.id }}" type="number" class="form-control" name="precio_proveedor" value="{{ p.precio_proveedor or '' }}" step="0.01">
+              </div>
+              <div class="col-md-4">
+                <label for="precioSalida{{ p.id }}" class="form-label">Precio Venta ($)</label>
+                <input id="precioSalida{{ p.id }}" type="number" class="form-control" name="precio_salida" value="{{ p.precio_salida or '' }}" step="0.01" required>
+              </div>
+              <div class="col-md-4">
+                <label for="unidad{{ p.id }}" class="form-label">Unidad de medida</label>
+                <select id="unidad{{ p.id }}" name="unidad_medida" class="form-select">
+                  <option value="" {% if not p.unidad_medida %}selected{% endif %}>-- Selecciona unidad --</option>
+                  <option value="unidad" {% if p.unidad_medida=='unidad' %}selected{% endif %}>Unidad</option>
+                  <option value="kg" {% if p.unidad_medida=='kg' %}selected{% endif %}>Kilogramo</option>
+                  <option value="g" {% if p.unidad_medida=='g' %}selected{% endif %}>Gramo</option>
+                  <option value="l" {% if p.unidad_medida=='l' %}selected{% endif %}>Litro</option>
+                  <option value="ml" {% if p.unidad_medida=='ml' %}selected{% endif %}>Mililitro</option>
+                  <option value="paq" {% if p.unidad_medida=='paq' %}selected{% endif %}>Paquete</option>
+                  <option value="otros" {% if p.unidad_medida=='otros' %}selected{% endif %}>Otros</option>
+                </select>
+              </div>
+              <div class="col-md-4">
+                <label for="stock{{ p.id }}" class="form-label">Stock</label>
+                <input id="stock{{ p.id }}" type="number" class="form-control" name="stock" value="{{ p.stock or 0 }}" required>
+              </div>
+              <div class="col-md-4">
+                <label for="categoria{{ p.id }}" class="form-label">Categoría</label>
+                <select id="categoria{{ p.id }}" name="categoria" class="form-select">
+                  <option value="" {% if not p.categoria %}selected{% endif %}>-- Selecciona una categoría --</option>
+                  <option value="Bebidas" {% if p.categoria=='Bebidas' %}selected{% endif %}>Bebidas</option>
+                  <option value="Snacks" {% if p.categoria=='Snacks' %}selected{% endif %}>Snacks</option>
+                  <option value="Lácteos" {% if p.categoria=='Lácteos' %}selected{% endif %}>Lácteos</option>
+                  <option value="Panadería" {% if p.categoria=='Panadería' %}selected{% endif %}>Panadería</option>
+                  <option value="Limpieza" {% if p.categoria=='Limpieza' %}selected{% endif %}>Limpieza</option>
+                  <option value="Frutas y Verduras" {% if p.categoria=='Frutas y Verduras' %}selected{% endif %}>Frutas y Verduras</option>
+                  <option value="Congelados" {% if p.categoria=='Congelados' %}selected{% endif %}>Congelados</option>
+                  <option value="Otros" {% if p.categoria=='Otros' %}selected{% endif %}>Otros</option>
+                </select>
+              </div>
+              <div class="col-md-4">
+                <label for="estado{{ p.id }}" class="form-label">Estado</label>
+                <select id="estado{{ p.id }}" name="estado" class="form-select" required>
+                  <option value="activo" {% if p.estado=='activo' %}selected{% endif %}>Activo</option>
+                  <option value="inactivo" {% if p.estado=='inactivo' %}selected{% endif %}>Inactivo</option>
+                </select>
+              </div>
+              <div class="col-md-4">
+                <label for="fechaIngreso{{ p.id }}" class="form-label">Fecha de ingreso</label>
+                <input id="fechaIngreso{{ p.id }}" type="date" class="form-control" name="fecha_ingreso" value="{{ p.fecha_ingreso or '' }}">
+              </div>
+              <div class="col-12">
+                <label for="descripcion{{ p.id }}" class="form-label">Descripción</label>
+                <textarea id="descripcion{{ p.id }}" class="form-control" name="descripcion" rows="3">{{ p.descripcion or '' }}</textarea>
+              </div>
+              <div class="col-12">
+                <label for="imagen{{ p.id }}" class="form-label">Imagen (opcional)</label>
+                <input id="imagen{{ p.id }}" type="file" class="form-control" name="imagen" accept="image/*">
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button class="btn btn-warning fw-semibold" type="submit"><i class="bi bi-save"></i> Guardar</button>
+            <button type="button" class="btn btn-secondary fw-semibold" data-bs-dismiss="modal">Cancelar</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Modal Confirmar Eliminar -->
+    <div class="modal fade" id="modalEliminar{{ p.id }}" tabindex="-1" aria-labelledby="eliminarLabel{{ p.id }}" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered">
+        <form class="modal-content" method="GET" action="{{ url_for('eliminar_producto', id=p.id) }}">
+          <div class="modal-header bg-danger text-white">
+            <h5 class="modal-title" id="eliminarLabel{{ p.id }}">Eliminar Producto</h5>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+          </div>
+          <div class="modal-body">
+            <p>¿Estás seguro que deseas eliminar el producto <strong>{{ p.nombre }}</strong>? Esta acción no se puede deshacer.</p>
+          </div>
+          <div class="modal-footer">
+            <button type="submit" class="btn btn-danger fw-semibold"><i class="bi bi-trash"></i> Sí, eliminar</button>
+            <button type="button" class="btn btn-secondary fw-semibold" data-bs-dismiss="modal">Cancelar</button>
+          </div>
+        </form>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+  <!-- Paginación -->
+  <nav aria-label="Paginación productos" class="mt-4">
+    <ul class="pagination justify-content-center">
+      <li class="page-item {% if page <= 1 %}disabled{% endif %}">
+        <a class="page-link" href="{{ url_for('productos', page=page-1) }}" tabindex="-1" aria-disabled="{{ page <= 1 }}">Anterior</a>
+      </li>
+      {% for pagenum in range(1, total_pages+1) %}
+      <li class="page-item {% if pagenum == page %}active{% endif %}">
+        <a class="page-link" href="{{ url_for('productos', page=pagenum) }}">{{ pagenum }}</a>
+      </li>
+      {% endfor %}
+      <li class="page-item {% if page >= total_pages %}disabled{% endif %}">
+        <a class="page-link" href="{{ url_for('productos', page=page+1) }}" aria-disabled="{{ page >= total_pages }}">Siguiente</a>
+      </li>
+    </ul>
+  </nav>
+</div>
+
+<!-- Modal Nuevo Producto -->
+<div class="modal fade" id="modalNuevoProducto" tabindex="-1" aria-labelledby="nuevoLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <form class="modal-content" method="POST" action="{{ url_for('nuevo_producto') }}" enctype="multipart/form-data" novalidate>
+      <div class="modal-header bg-success text-white">
+        <h5 class="modal-title" id="nuevoLabel"><i class="bi bi-plus-circle"></i> Agregar Producto</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+      <div class="modal-body">
+        <div class="row g-3">
+          <div class="col-md-6">
+            <label for="codigoInternoNuevo" class="form-label">Código Interno</label>
+            <input id="codigoInternoNuevo" type="text" class="form-control" name="codigo_interno" placeholder="Código interno del producto">
+          </div>
+          <div class="col-md-6">
+            <label for="codigoNuevo" class="form-label">Código de Barras</label>
+            <input id="codigoNuevo" type="text" class="form-control" name="codigo" placeholder="Código de barras">
+          </div>
+          <div class="col-md-6">
+            <label for="nombreNuevo" class="form-label">Nombre del producto</label>
+            <input id="nombreNuevo" type="text" class="form-control" name="nombre" placeholder="Nombre del producto" required>
+          </div>
+          <div class="col-md-6">
+            <label for="marcaNuevo" class="form-label">Marca</label>
+            <input id="marcaNuevo" type="text" class="form-control" name="marca" placeholder="Marca del producto">
+          </div>
+          <div class="col-md-4">
+            <label for="precioProveedorNuevo" class="form-label">Precio Proveedor ($)</label>
+            <input id="precioProveedorNuevo" type="number" class="form-control" name="precio_proveedor" placeholder="Precio proveedor" step="0.01">
+          </div>
+          <div class="col-md-4">
+            <label for="precioSalidaNuevo" class="form-label">Precio Venta ($)</label>
+            <input id="precioSalidaNuevo" type="number" class="form-control" name="precio_salida" placeholder="Precio venta" step="0.01" required>
+          </div>
+          <div class="col-md-4">
+            <label for="unidadNuevo" class="form-label">Unidad de medida</label>
+            <select id="unidadNuevo" name="unidad_medida" class="form-select">
+              <option value="" selected>-- Selecciona unidad --</option>
+              <option value="unidad">Unidad</option>
+              <option value="kg">Kilogramo</option>
+              <option value="g">Gramo</option>
+              <option value="l">Litro</option>
+              <option value="ml">Mililitro</option>
+              <option value="paq">Paquete</option>
+              <option value="otros">Otros</option>
+            </select>
+          </div>
+          <div class="col-md-4">
+            <label for="stockNuevo" class="form-label">Stock</label>
+            <input id="stockNuevo" type="number" class="form-control" name="stock" placeholder="Stock" required>
+          </div>
+          <div class="col-md-4">
+            <label for="categoriaNuevo" class="form-label">Categoría</label>
+            <select id="categoriaNuevo" name="categoria" class="form-select">
+              <option value="" selected>-- Selecciona una categoría --</option>
+              <option value="Bebidas">Bebidas</option>
+              <option value="Snacks">Snacks</option>
+              <option value="Lácteos">Lácteos</option>
+              <option value="Panadería">Panadería</option>
+              <option value="Limpieza">Limpieza</option>
+              <option value="Frutas y Verduras">Frutas y Verduras</option>
+              <option value="Congelados">Congelados</option>
+              <option value="Otros">Otros</option>
+            </select>
+          </div>
+          <div class="col-md-4">
+            <label for="estadoNuevo" class="form-label">Estado</label>
+            <select id="estadoNuevo" name="estado" class="form-select" required>
+              <option value="activo" selected>Activo</option>
+              <option value="inactivo">Inactivo</option>
+            </select>
+          </div>
+          <div class="col-md-4">
+            <label for="fechaIngresoNuevo" class="form-label">Fecha de ingreso</label>
+            <input id="fechaIngresoNuevo" type="date" class="form-control" name="fecha_ingreso" value="{{ fecha_actual }}">
+          </div>
+          <div class="col-12">
+            <label for="descripcionNuevo" class="form-label">Descripción</label>
+            <textarea id="descripcionNuevo" class="form-control" name="descripcion" placeholder="Descripción del producto" rows="3"></textarea>
+          </div>
+          <div class="col-12">
+            <label for="imagenNuevo" class="form-label">Imagen</label>
+            <input id="imagenNuevo" type="file" class="form-control" name="imagen" accept="image/*" required>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-success fw-semibold" type="submit"><i class="bi bi-check-lg"></i> Guardar</button>
+        <button type="button" class="btn btn-secondary fw-semibold" data-bs-dismiss="modal">Cancelar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+{% endblock %}

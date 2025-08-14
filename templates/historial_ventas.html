@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+{% block title %}📊 Historial de Ventas{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <h2 class="mb-4 text-primary">📊 Historial de Ventas</h2>
+
+  <ul class="nav nav-tabs" id="ventasTabs" role="tablist">
+    <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#dia">Por Día</button></li>
+    <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#mes">Por Mes</button></li>
+    <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#anio">Por Año</button></li>
+  </ul>
+
+  <div class="tab-content mt-4">
+    <!-- Día -->
+    <div class="tab-pane fade show active" id="dia">
+      {% for fecha, datos in resumen_dia.items() %}
+        <div class="card mb-3">
+          <div class="card-header bg-light">
+            <strong>{{ fecha }}</strong> | Total: ${{ '%.2f'|format(datos.total) }} | Productos: {{ datos.cantidad }}
+          </div>
+          <div class="card-body">
+            <ul>
+              {% for venta in datos.ventas %}
+                <li>
+                  ID: {{ venta.id }} | Cliente: {{ venta.usuario }} | Total: ${{ venta.total }}
+                </li>
+              {% endfor %}
+            </ul>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+
+    <!-- Mes -->
+    <div class="tab-pane fade" id="mes">
+      {% for mes, datos in resumen_mes.items() %}
+        <div class="card mb-3">
+          <div class="card-header bg-light">
+            <strong>{{ mes }}</strong> | Total: ${{ '%.2f'|format(datos.total) }} | Productos: {{ datos.cantidad }}
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+
+    <!-- Año -->
+    <div class="tab-pane fade" id="anio">
+      {% for anio, datos in resumen_anio.items() %}
+        <div class="card mb-3">
+          <div class="card-header bg-light">
+            <strong>{{ anio }}</strong> | Total: ${{ '%.2f'|format(datos.total) }} | Productos: {{ datos.cantidad }}
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+{% endblock %}

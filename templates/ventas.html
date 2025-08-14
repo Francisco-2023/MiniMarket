@@ -1,0 +1,278 @@
+{% extends 'base.html' %}
+{% block title %}📋 Registrar Venta{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <h2 class="mb-4 text-primary">Registrar Venta</h2>
+
+  <div class="mb-3">
+    <input type="text" id="buscarProducto" class="form-control" placeholder="Buscar producto por nombre...">
+  </div>
+
+  <!-- Productos con paginación -->
+  <div class="card shadow-sm mb-4">
+    <div class="card-header bg-light">
+      <strong>Productos disponibles</strong>
+    </div>
+    <div class="card-body p-0">
+      <div class="table-responsive" style="max-height: 350px; overflow-y: auto;">
+        <table class="table table-hover mb-0" id="tablaProductos">
+          <thead class="table-light sticky-top">
+            <tr>
+              <th>Nombre</th>
+              <th class="text-end">Precio</th>
+              <th class="text-center">Stock</th>
+              <th class="text-center">Agregar</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- Renderizado dinámico -->
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Paginación -->
+      <nav aria-label="Paginación productos" class="p-2">
+        <ul class="pagination justify-content-center mb-0" id="paginationProductos"></ul>
+      </nav>
+    </div>
+  </div>
+
+  <!-- Carrito de venta -->
+  <form method="POST" id="ventaForm" novalidate>
+    <h4>Carrito de Venta</h4>
+    <div class="table-responsive">
+      <table class="table table-bordered" id="tablaCarrito">
+        <thead class="table-light">
+          <tr>
+            <th>Producto</th>
+            <th class="text-end">Precio Unitario</th>
+            <th style="width:120px;">Cantidad</th>
+            <th class="text-end">Subtotal</th>
+            <th class="text-center" style="width:70px;">Quitar</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- Filas agregadas por JS -->
+        </tbody>
+      </table>
+    </div>
+
+    <div class="text-end mb-3">
+      <h4>Total: $<span id="totalVenta">0.00</span></h4>
+    </div>
+
+    <button type="submit" class="btn btn-success" id="botonEnviar" disabled>
+      <i class="bi bi-check2-circle"></i> Registrar Venta
+    </button>
+  </form>
+</div>
+
+<!-- Bootstrap Icons -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" />
+
+<script>
+  const productos = {{ productos|tojson }};
+  const buscarInput = document.getElementById('buscarProducto');
+  const tablaProductosBody = document.querySelector('#tablaProductos tbody');
+  const tablaCarritoBody = document.querySelector('#tablaCarrito tbody');
+  const totalVentaSpan = document.getElementById('totalVenta');
+  const botonEnviar = document.getElementById('botonEnviar');
+  const paginationProductos = document.getElementById('paginationProductos');
+
+  const ITEMS_POR_PAGINA = 10;
+  let paginaActual = 1;
+  let productosFiltrados = [...productos];
+  let carrito = [];
+
+  // Filtra productos por nombre
+  function filtrarProductos() {
+    const filtro = buscarInput.value.trim().toLowerCase();
+    productosFiltrados = productos.filter(p => p.nombre.toLowerCase().includes(filtro));
+    paginaActual = 1;
+    renderizarProductos();
+    renderizarPaginacion();
+  }
+
+  // Renderiza productos paginados en la tabla
+  function renderizarProductos() {
+    tablaProductosBody.innerHTML = '';
+    const inicio = (paginaActual - 1) * ITEMS_POR_PAGINA;
+    const fin = inicio + ITEMS_POR_PAGINA;
+    const paginaProductos = productosFiltrados.slice(inicio, fin);
+
+    if(paginaProductos.length === 0) {
+      tablaProductosBody.innerHTML = `
+        <tr><td colspan="4" class="text-center text-muted">No se encontraron productos.</td></tr>
+      `;
+      paginationProductos.innerHTML = '';
+      return;
+    }
+
+    paginaProductos.forEach(p => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td>${p.nombre}</td>
+        <td class="text-end">$${p.precio_salida.toFixed(2)}</td>
+        <td class="text-center">${p.stock}</td>
+        <td class="text-center">
+          <button class="btn btn-sm btn-primary agregar-btn" 
+            data-id="${p.id}" 
+            data-nombre="${p.nombre}" 
+            data-precio="${p.precio_salida}" 
+            data-stock="${p.stock}" 
+            ${p.stock <= 0 ? 'disabled title="Sin stock"' : ''}>
+            <i class="bi bi-plus-lg"></i>
+          </button>
+        </td>
+      `;
+      tablaProductosBody.appendChild(tr);
+    });
+
+    // Agregar eventos a botones "Agregar"
+    document.querySelectorAll('.agregar-btn').forEach(btn => {
+      btn.onclick = () => agregarAlCarrito(
+        btn.dataset.id,
+        btn.dataset.nombre,
+        parseFloat(btn.dataset.precio),
+        parseInt(btn.dataset.stock)
+      );
+    });
+  }
+
+  // Renderizar paginación de productos
+  function renderizarPaginacion() {
+    paginationProductos.innerHTML = '';
+    const totalPaginas = Math.ceil(productosFiltrados.length / ITEMS_POR_PAGINA);
+    if (totalPaginas <= 1) return;
+
+    for (let i = 1; i <= totalPaginas; i++) {
+      const li = document.createElement('li');
+      li.className = `page-item ${i === paginaActual ? 'active' : ''}`;
+      li.innerHTML = `<a class="page-link" href="#">${i}</a>`;
+      li.onclick = e => {
+        e.preventDefault();
+        paginaActual = i;
+        renderizarProductos();
+        renderizarPaginacion();
+      };
+      paginationProductos.appendChild(li);
+    }
+  }
+
+  // Agregar producto al carrito con control de stock
+  function agregarAlCarrito(id, nombre, precio, stock) {
+    const item = carrito.find(p => p.id === id);
+    if (item) {
+      if (item.cantidad < stock) {
+        item.cantidad++;
+        item.subtotal = item.precio_unitario * item.cantidad;
+      } else {
+        alert('No hay más stock disponible para este producto.');
+      }
+    } else {
+      carrito.push({
+        id,
+        nombre,
+        cantidad: 1,
+        precio_unitario: precio,
+        subtotal: precio,
+        stock
+      });
+    }
+    renderizarCarrito();
+  }
+
+  // Quitar producto del carrito
+  function quitarDelCarrito(id) {
+    carrito = carrito.filter(p => p.id !== id);
+    renderizarCarrito();
+  }
+
+  // Cambiar cantidad en carrito con límites
+  function cambiarCantidad(id, cantidad) {
+    const item = carrito.find(p => p.id === id);
+    if (!item) return;
+    cantidad = Math.max(1, Math.min(cantidad, item.stock));
+    item.cantidad = cantidad;
+    item.subtotal = item.precio_unitario * cantidad;
+    renderizarCarrito();
+  }
+
+  // Renderizar carrito
+  function renderizarCarrito() {
+    tablaCarritoBody.innerHTML = '';
+
+    carrito.forEach(item => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td>${item.nombre}</td>
+        <td class="text-end">$${item.precio_unitario.toFixed(2)}</td>
+        <td>
+          <input type="number" min="1" max="${item.stock}" value="${item.cantidad}" class="form-control cantidad-input" data-id="${item.id}" style="max-width: 80px;">
+        </td>
+        <td class="text-end">$${item.subtotal.toFixed(2)}</td>
+        <td class="text-center">
+          <button type="button" class="btn btn-danger btn-sm btn-quitar" data-id="${item.id}" title="Quitar producto">
+            <i class="bi bi-x-lg"></i>
+          </button>
+        </td>
+      `;
+      tablaCarritoBody.appendChild(tr);
+    });
+
+    actualizarTotal();
+    actualizarFormulario();
+
+    // Eventos para inputs cantidad
+    document.querySelectorAll('.cantidad-input').forEach(input => {
+      input.onchange = e => {
+        let val = parseInt(e.target.value);
+        if (isNaN(val) || val < 1) val = 1;
+        cambiarCantidad(e.target.dataset.id, val);
+      };
+    });
+
+    // Eventos para botones quitar
+    document.querySelectorAll('.btn-quitar').forEach(btn => {
+      btn.onclick = e => {
+        quitarDelCarrito(e.target.closest('button').dataset.id);
+      };
+    });
+  }
+
+  // Actualizar total de la venta
+  function actualizarTotal() {
+    let total = carrito.reduce((acc, item) => acc + item.subtotal, 0);
+    totalVentaSpan.textContent = total.toFixed(2);
+    botonEnviar.disabled = carrito.length === 0;
+  }
+
+  // Actualizar inputs ocultos para envío POST
+  function actualizarFormulario() {
+    const form = document.getElementById('ventaForm');
+    // Remover inputs ocultos previos
+    [...form.querySelectorAll('input[name="producto_id[]"], input[name="cantidad[]"]')].forEach(el => el.remove());
+
+    carrito.forEach(item => {
+      const inputId = document.createElement('input');
+      inputId.type = 'hidden';
+      inputId.name = 'producto_id[]';
+      inputId.value = item.id;
+      form.appendChild(inputId);
+
+      const inputCant = document.createElement('input');
+      inputCant.type = 'hidden';
+      inputCant.name = 'cantidad[]';
+      inputCant.value = item.cantidad;
+      form.appendChild(inputCant);
+    });
+  }
+
+  // Inicializar buscador y paginación
+  buscarInput.addEventListener('input', filtrarProductos);
+
+  // Inicializar renderizado
+  filtrarProductos();
+</script>
+{% endblock %}

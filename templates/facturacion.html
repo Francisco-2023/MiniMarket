@@ -1,0 +1,189 @@
+{% extends 'base.html' %}
+{% block title %}🧾 Facturación{% endblock %}
+
+{% block content %}
+<h2 class="mb-4 text-primary">🧾 Facturación</h2>
+
+<form method="POST" action="{{ url_for('vender') }}">
+  <div class="mb-3">
+    <label for="cliente" class="form-label fw-semibold">Nombre del Cliente</label>
+    <input type="text" id="cliente" name="cliente" class="form-control" placeholder="Ingrese nombre del cliente" required>
+  </div>
+
+  <table class="table table-bordered align-middle">
+    <thead class="table-light">
+      <tr>
+        <th style="width: 35%;">Producto</th>
+        <th style="width: 15%;">Cantidad</th>
+        <th style="width: 15%;">Precio Unitario</th>
+        <th style="width: 15%;">Subtotal</th>
+        <th style="width: 10%;">Acción</th>
+      </tr>
+    </thead>
+    <tbody id="productos-body">
+      <!-- Filas de productos -->
+    </tbody>
+  </table>
+
+  <button type="button" id="btnAgregarProducto" class="btn btn-outline-primary mb-3">
+    <i class="bi bi-plus-lg"></i> Agregar Producto
+  </button>
+
+  <div class="d-flex justify-content-end align-items-center gap-3">
+    <label class="fw-semibold mb-0">Total a pagar:</label>
+    <input type="text" id="totalPagar" name="total" class="form-control text-end fw-bold" value="0.00" readonly style="max-width: 150px;">
+  </div>
+
+  <div class="mt-4 d-flex justify-content-end">
+    <button type="submit" class="btn btn-success fw-semibold">
+      <i class="bi bi-cash-stack"></i> Registrar Venta
+    </button>
+  </div>
+</form>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+  const productosDisponibles = {{ productos_json | safe }};
+  const productosBody = document.getElementById('productos-body');
+  const btnAgregar = document.getElementById('btnAgregarProducto');
+  const totalPagar = document.getElementById('totalPagar');
+
+  function crearFilaProducto() {
+    const tr = document.createElement('tr');
+
+    // Celda Producto
+    const tdProducto = document.createElement('td');
+    const selectProducto = document.createElement('select');
+    selectProducto.name = 'productos[]';
+    selectProducto.classList.add('form-select');
+    selectProducto.required = true;
+
+    const defaultOption = document.createElement('option');
+    defaultOption.disabled = true;
+    defaultOption.selected = true;
+    defaultOption.text = '-- Selecciona producto --';
+    selectProducto.appendChild(defaultOption);
+
+    productosDisponibles.forEach(p => {
+      const opt = document.createElement('option');
+      opt.value = p.id;
+      opt.text = p.nombre;
+      opt.dataset.nombre = p.nombre;
+      opt.dataset.precio = p.precio;
+      selectProducto.appendChild(opt);
+    });
+
+    tdProducto.appendChild(selectProducto);
+
+    // Celda cantidad
+    const tdCantidad = document.createElement('td');
+    const inputCantidad = document.createElement('input');
+    inputCantidad.type = 'number';
+    inputCantidad.name = 'cantidades[]';
+    inputCantidad.classList.add('form-control');
+    inputCantidad.min = '1';
+    inputCantidad.value = '1';
+    inputCantidad.required = true;
+    tdCantidad.appendChild(inputCantidad);
+
+    // Celda precio
+    const tdPrecio = document.createElement('td');
+    const inputPrecio = document.createElement('input');
+    inputPrecio.type = 'text';
+    inputPrecio.classList.add('form-control');
+    inputPrecio.readOnly = true;
+    inputPrecio.value = '0.00';
+    tdPrecio.appendChild(inputPrecio);
+
+    // Celda subtotal
+    const tdSubtotal = document.createElement('td');
+    const inputSubtotal = document.createElement('input');
+    inputSubtotal.type = 'text';
+    inputSubtotal.classList.add('form-control');
+    inputSubtotal.readOnly = true;
+    inputSubtotal.value = '0.00';
+    tdSubtotal.appendChild(inputSubtotal);
+
+    // Celda eliminar
+    const tdEliminar = document.createElement('td');
+    const btnEliminar = document.createElement('button');
+    btnEliminar.type = 'button';
+    btnEliminar.classList.add('btn', 'btn-danger', 'btn-sm');
+    btnEliminar.innerHTML = '<i class="bi bi-trash"></i>';
+    tdEliminar.appendChild(btnEliminar);
+
+    // Campos ocultos: nombre, precio, subtotal
+    const inputNombreHidden = document.createElement('input');
+    inputNombreHidden.type = 'hidden';
+    inputNombreHidden.name = 'nombres[]';
+
+    const inputPrecioHidden = document.createElement('input');
+    inputPrecioHidden.type = 'hidden';
+    inputPrecioHidden.name = 'precios[]';
+
+    const inputSubtotalHidden = document.createElement('input');
+    inputSubtotalHidden.type = 'hidden';
+    inputSubtotalHidden.name = 'subtotales[]';
+
+    tr.appendChild(tdProducto);
+    tr.appendChild(tdCantidad);
+    tr.appendChild(tdPrecio);
+    tr.appendChild(tdSubtotal);
+    tr.appendChild(tdEliminar);
+    tr.appendChild(inputNombreHidden);
+    tr.appendChild(inputPrecioHidden);
+    tr.appendChild(inputSubtotalHidden);
+
+    selectProducto.addEventListener('change', () => {
+      const selected = selectProducto.options[selectProducto.selectedIndex];
+      const precio = parseFloat(selected.dataset.precio || 0);
+      const nombre = selected.dataset.nombre || '';
+
+      inputPrecio.value = precio.toFixed(2);
+      inputNombreHidden.value = nombre;
+      inputPrecioHidden.value = precio.toFixed(2);
+      actualizarTotalFila();
+      actualizarTotalGeneral();
+    });
+
+    inputCantidad.addEventListener('input', () => {
+      actualizarTotalFila();
+      actualizarTotalGeneral();
+    });
+
+    btnEliminar.addEventListener('click', () => {
+      tr.remove();
+      actualizarTotalGeneral();
+    });
+
+    function actualizarTotalFila() {
+      const cantidad = parseInt(inputCantidad.value) || 0;
+      const precio = parseFloat(inputPrecio.value) || 0;
+      const subtotal = cantidad * precio;
+      inputSubtotal.value = subtotal.toFixed(2);
+      inputSubtotalHidden.value = subtotal.toFixed(2);
+    }
+
+    return tr;
+  }
+
+  btnAgregar.addEventListener('click', () => {
+    const fila = crearFilaProducto();
+    productosBody.appendChild(fila);
+  });
+
+  function actualizarTotalGeneral() {
+    let total = 0;
+    productosBody.querySelectorAll('tr').forEach(tr => {
+      const inputSubtotal = tr.querySelector('td:nth-child(4) input');
+      total += parseFloat(inputSubtotal.value) || 0;
+    });
+    totalPagar.value = total.toFixed(2);
+  }
+
+  window.addEventListener('DOMContentLoaded', () => {
+    btnAgregar.click();
+  });
+</script>
+{% endblock %}

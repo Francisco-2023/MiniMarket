@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+{% block title %}Editar Producto{% endblock %}
+{% block content %}
+<div class="container py-4">
+  <h2 class="mb-4">✏️ Editar Producto</h2>
+  <form method="POST">
+    <div class="mb-3">
+      <label>Nombre</label>
+      <input type="text" class="form-control" name="nombre" value="{{ producto.nombre }}" required>
+    </div>
+    <div class="mb-3">
+      <label>Precio</label>
+      <input type="number" step="0.01" class="form-control" name="precio" value="{{ producto.precio }}" required>
+    </div>
+    <div class="mb-3">
+      <label>Stock</label>
+      <input type="number" class="form-control" name="stock" value="{{ producto.stock }}" required>
+    </div>
+    <div class="mb-3">
+      <label>Categoría</label>
+      <input type="text" class="form-control" name="categoria" value="{{ producto.categoria }}">
+    </div>
+    <div class="mb-3">
+      <label>Descripción</label>
+      <textarea class="form-control" name="descripcion">{{ producto.descripcion }}</textarea>
+    </div>
+    <button class="btn btn-primary">Actualizar</button>
+    <a href="{{ url_for('productos') }}" class="btn btn-secondary">Cancelar</a>
+  </form>
+</div>
+{% endblock %}

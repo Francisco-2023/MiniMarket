@@ -1,0 +1,96 @@
+{% extends 'base.html' %}
+{% block title %}📄 Roles de Pago{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <h2 class="mb-4 text-primary">📄 Roles de Pago</h2>
+
+  <!-- Botón para crear nuevo -->
+  <button class="btn btn-success mb-3" data-bs-toggle="modal" data-bs-target="#crearModal">
+    ➕ Nuevo Rol de Pago
+  </button>
+
+  <!-- Tabla -->
+  <div class="table-responsive">
+    <table class="table table-bordered table-hover align-middle">
+      <thead class="table-light">
+        <tr>
+          <th>Empleado</th>
+          <th>Cargo</th>
+          <th>Fecha de Pago</th>
+          <th>Sueldo</th>
+          <th>Bono</th>
+          <th>Descuento</th>
+          <th>Total</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for rol in roles %}
+        <tr>
+          <td>{{ rol.empleado }}</td>
+          <td>{{ rol.cargo }}</td>
+          <td>{{ rol.fecha_pago }}</td>
+          <td>$ {{ '%.2f' | format(rol.sueldo) }}</td>
+          <td>$ {{ '%.2f' | format(rol.bono) }}</td>
+          <td>$ {{ '%.2f' | format(rol.descuento) }}</td>
+          <td><strong>$ {{ '%.2f' | format(rol.total) }}</strong></td>
+          <td>
+            <div class="btn-group" role="group">
+              <!-- Ver -->
+              <a href="{{ url_for('ver_rol', rol_id=rol.id) }}" class="btn btn-info btn-sm" title="Ver">👁️</a>
+
+              <!-- Editar -->
+              <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#editarModal{{ rol.id }}" title="Editar">✏️</button>
+
+              <!-- Eliminar -->
+              <form action="{{ url_for('eliminar_rol_pago', rol_id=rol.id) }}" method="POST" style="display:inline;">
+                <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('¿Seguro que deseas eliminar este rol?')" title="Eliminar">🗑️</button>
+              </form>
+            </div>
+          </td>
+        </tr>
+
+        <!-- Modal Editar -->
+        <div class="modal fade" id="editarModal{{ rol.id }}" tabindex="-1" aria-hidden="true">
+          <div class="modal-dialog">
+            <form class="modal-content" action="{{ url_for('editar_rol_pago', rol_id=rol.id) }}" method="POST">
+              <div class="modal-header">
+                <h5 class="modal-title">Editar Rol de Pago</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+              </div>
+              <div class="modal-body">
+                {% include 'formulario_rol.html' with context %}
+              </div>
+              <div class="modal-footer">
+                <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+              </div>
+            </form>
+          </div>
+        </div>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Modal Crear -->
+<div class="modal fade" id="crearModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <form class="modal-content" action="{{ url_for('crear_rol_pago') }}" method="POST">
+      <div class="modal-header">
+        <h5 class="modal-title">Nuevo Rol de Pago</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        {% include 'formulario_rol.html' %}
+      </div>
+      <div class="modal-footer">
+        <button type="submit" class="btn btn-success">Guardar</button>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
