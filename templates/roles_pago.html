@@ -1,96 +1,144 @@
 {% extends 'base.html' %}
 {% block title %}📄 Roles de Pago{% endblock %}
 
+{% block extra_head %}
+  <style>
+    .card {
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+    }
+    .card-header {
+      transition: background-color 0.3s ease;
+    }
+    .card:hover .card-header {
+      background-color: #006d32;
+    }
+    .fade-in {
+      animation: fadeIn 0.5s ease-in;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .btn-group .btn {
+      transition: transform 0.2s ease, background-color 0.2s ease;
+    }
+    .btn-group .btn:hover {
+      transform: scale(1.1);
+    }
+    .row-cols-1 .col {
+      opacity: 0;
+      animation: fadeIn 0.5s ease-in forwards;
+    }
+    .row-cols-1 .col:nth-child(1) { animation-delay: 0.1s; }
+    .row-cols-1 .col:nth-child(2) { animation-delay: 0.2s; }
+    .row-cols-1 .col:nth-child(3) { animation-delay: 0.3s; }
+    .row-cols-1 .col:nth-child(4) { animation-delay: 0.4s; }
+    .row-cols-1 .col:nth-child(5) { animation-delay: 0.5s; }
+    .row-cols-1 .col:nth-child(6) { animation-delay: 0.6s; }
+  </style>
+{% endblock %}
+
 {% block content %}
 <div class="container py-4">
-  <h2 class="mb-4 text-primary">📄 Roles de Pago</h2>
+  <h2 class="mb-4 text-primary fw-bold text-center animate__animated animate__fadeInDown">📄 Roles de Pago</h2>
 
   <!-- Botón para crear nuevo -->
-  <button class="btn btn-success mb-3" data-bs-toggle="modal" data-bs-target="#crearModal">
-    ➕ Nuevo Rol de Pago
-  </button>
+  <div class="d-flex justify-content-end mb-3">
+    <button class="btn btn-success btn-lg animate__animated animate__bounceIn" data-bs-toggle="modal" data-bs-target="#crearModal">
+      ➕ Nuevo Rol de Pago
+    </button>
+  </div>
 
-  <!-- Tabla -->
-  <div class="table-responsive">
-    <table class="table table-bordered table-hover align-middle">
-      <thead class="table-light">
-        <tr>
-          <th>Empleado</th>
-          <th>Cargo</th>
-          <th>Fecha de Pago</th>
-          <th>Sueldo</th>
-          <th>Bono</th>
-          <th>Descuento</th>
-          <th>Total</th>
-          <th>Acciones</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for rol in roles %}
-        <tr>
-          <td>{{ rol.empleado }}</td>
-          <td>{{ rol.cargo }}</td>
-          <td>{{ rol.fecha_pago }}</td>
-          <td>$ {{ '%.2f' | format(rol.sueldo) }}</td>
-          <td>$ {{ '%.2f' | format(rol.bono) }}</td>
-          <td>$ {{ '%.2f' | format(rol.descuento) }}</td>
-          <td><strong>$ {{ '%.2f' | format(rol.total) }}</strong></td>
-          <td>
+  <!-- Lista de Roles en formato de tarjetas -->
+  <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+    {% for rol in roles %}
+      <div class="col">
+        <div class="card h-100 shadow-sm fade-in">
+          <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">{{ rol.empleado|default('Sin nombre') }}</h5>
+            <span class="badge bg-light text-success">Total: ${{ '%.2f' | format(rol.total|default(0)) }}</span>
+          </div>
+          <div class="card-body">
+            <p class="card-text"><strong>Cargo:</strong> <span class="text-muted">{{ rol.cargo|default('Sin cargo') }}</span></p>
+            <p class="card-text"><strong>Fecha de Pago:</strong> <span class="text-muted">{{ rol.fecha_pago|default('Sin fecha') }}</span></p>
+            <p class="card-text"><strong>Sueldo:</strong> <span class="text-success">${{ '%.2f' | format(rol.sueldo|default(0)) }}</span></p>
+            <p class="card-text"><strong>Bono:</strong> <span class="text-success">${{ '%.2f' | format(rol.bono|default(0)) }}</span></p>
+            <p class="card-text"><strong>Descuento:</strong> <span class="text-danger">${{ '%.2f' | format(rol.descuento|default(0)) }}</span></p>
+          </div>
+          <div class="card-footer bg-transparent border-0 d-flex justify-content-between">
             <div class="btn-group" role="group">
               <!-- Ver -->
-              <a href="{{ url_for('ver_rol', rol_id=rol.id) }}" class="btn btn-info btn-sm" title="Ver">👁️</a>
+              {% if rol.id is defined %}
+                <a href="{{ url_for('view_rol_detail', rol_id=rol.id) }}" class="btn btn-info btn-sm" title="Ver">
+                  👁️
+                </a>
+              {% else %}
+                <span class="text-muted">Sin ID</span>
+              {% endif %}
 
               <!-- Editar -->
-              <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#editarModal{{ rol.id }}" title="Editar">✏️</button>
+              <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#editarModal{{ loop.index0 }}" title="Editar">
+                ✏️
+              </button>
 
               <!-- Eliminar -->
-              <form action="{{ url_for('eliminar_rol_pago', rol_id=rol.id) }}" method="POST" style="display:inline;">
-                <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('¿Seguro que deseas eliminar este rol?')" title="Eliminar">🗑️</button>
+              <form action="{{ url_for('eliminar_rol_pago', rol_id=rol.id) if rol.id is defined else '#' }}" method="POST" style="display:inline;">
+                <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('¿Seguro que deseas eliminar este rol?')" title="Eliminar" {% if rol.id is not defined %}disabled{% endif %}>
+                  🗑️
+                </button>
               </form>
             </div>
-          </td>
-        </tr>
-
-        <!-- Modal Editar -->
-        <div class="modal fade" id="editarModal{{ rol.id }}" tabindex="-1" aria-hidden="true">
-          <div class="modal-dialog">
-            <form class="modal-content" action="{{ url_for('editar_rol_pago', rol_id=rol.id) }}" method="POST">
-              <div class="modal-header">
-                <h5 class="modal-title">Editar Rol de Pago</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-              </div>
-              <div class="modal-body">
-                {% include 'formulario_rol.html' with context %}
-              </div>
-              <div class="modal-footer">
-                <button type="submit" class="btn btn-primary">Guardar Cambios</button>
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-              </div>
-            </form>
           </div>
         </div>
-        {% endfor %}
-      </tbody>
-    </table>
-  </div>
-</div>
+      </div>
 
-<!-- Modal Crear -->
-<div class="modal fade" id="crearModal" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog">
-    <form class="modal-content" action="{{ url_for('crear_rol_pago') }}" method="POST">
-      <div class="modal-header">
-        <h5 class="modal-title">Nuevo Rol de Pago</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      <!-- Modal Editar -->
+      <div class="modal fade" id="editarModal{{ loop.index0 }}" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+          <form class="modal-content" action="{{ url_for('editar_rol_pago', rol_id=rol.id) if rol.id is defined else '#' }}" method="POST">
+            <div class="modal-header">
+              <h5 class="modal-title">Editar Rol de Pago</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+              {% include 'formulario_rol.html' with context %}
+            </div>
+            <div class="modal-footer">
+              <button type="submit" class="btn btn-primary" {% if rol.id is not defined %}disabled{% endif %}>Guardar Cambios</button>
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+            </div>
+          </form>
+        </div>
       </div>
-      <div class="modal-body">
-        {% include 'formulario_rol.html' %}
-      </div>
-      <div class="modal-footer">
-        <button type="submit" class="btn btn-success">Guardar</button>
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-      </div>
-    </form>
+    {% endfor %}
   </div>
+
+  <!-- Modal Crear -->
+  <div class="modal fade" id="crearModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+      <form class="modal-content" action="{{ url_for('crear_rol_pago') }}" method="POST">
+        <div class="modal-header">
+          <h5 class="modal-title">Nuevo Rol de Pago</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          {% include 'formulario_rol.html' %}
+        </div>
+        <div class="modal-footer">
+          <button type="submit" class="btn btn-success">Guardar</button>
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Mensaje si no hay roles -->
+  {% if not roles %}
+    <p class="text-center text-muted mt-4 animate__animated animate__fadeIn">No hay roles de pago registrados.</p>
+  {% endif %}
 </div>
 {% endblock %}

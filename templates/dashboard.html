@@ -2,48 +2,99 @@
 {% block title %}🏪 Dashboard Minimarket{% endblock %}
 {% block content %}
 <div class="container py-5">
+
+  <!-- Encabezado -->
   <div class="text-center mb-5">
     <h1 class="display-5 fw-bold text-primary">
-  Bienvenido,
-  {% if '@' in usuario %}
-    {{ usuario.split('@')[0] | capitalize }}
-  {% else %}
-    {{ usuario | capitalize }}
-  {% endif %}
-</h1>
-<p class="lead">Este es tu panel principal del Minimarket.</p>
+      Bienvenido,
+      {% if '@' in usuario %}
+        {{ usuario.split('@')[0] | capitalize }}
+      {% else %}
+        {{ usuario | capitalize }}
+      {% endif %}
+    </h1>
+    <p class="lead text-muted">Este es tu panel principal del Minimarket.</p>
   </div>
 
+  <!-- Fila de estadísticas -->
+  <div class="row g-4 mb-4">
+    <div class="col-md-4">
+      <div class="card text-center border-0 shadow-sm h-100">
+        <div class="card-body">
+          <h6 class="text-muted">Productos en inventario</h6>
+          <h2 class="fw-bold text-primary">125</h2>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card text-center border-0 shadow-sm h-100">
+        <div class="card-body">
+          <h6 class="text-muted">Ventas del día</h6>
+          <h2 class="fw-bold text-success">$350</h2>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card text-center border-0 shadow-sm h-100">
+        <div class="card-body">
+          <h6 class="text-muted">Usuarios registrados</h6>
+          <h2 class="fw-bold text-secondary">24</h2>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Opciones principales -->
   <div class="row g-4">
     <div class="col-md-4">
-      <div class="card shadow-sm border-0">
+      <div class="card shadow border-0 h-100">
         <div class="card-body text-center">
-          <h5 class="card-title">🛒 Productos</h5>
-          <p class="card-text">Administra tu inventario</p>
-          <a href="{{ url_for('productos') }}" class="btn btn-outline-primary w-100">Ir a Productos</a>
+          <div class="mb-3 fs-2">🛒</div>
+          <h5 class="card-title">Productos</h5>
+          <p class="card-text text-muted">Administra tu inventario y categorías</p>
+          <a href="{{ url_for('productos') }}" class="btn btn-primary w-100">Ir a Productos</a>
         </div>
       </div>
     </div>
 
     <div class="col-md-4">
-      <div class="card shadow-sm border-0">
+      <div class="card shadow border-0 h-100">
         <div class="card-body text-center">
-          <h5 class="card-title">📦 Ventas</h5>
-          <p class="card-text">Historial y facturación</p>
-          <a href="#" class="btn btn-outline-success w-100">Ver Ventas</a>
+          <div class="mb-3 fs-2">📦</div>
+          <h5 class="card-title">Ventas</h5>
+          <p class="card-text text-muted">Historial de ventas y facturación</p>
+          <a href="#" class="btn btn-success w-100">Ver Ventas</a>
         </div>
       </div>
     </div>
 
     <div class="col-md-4">
-      <div class="card shadow-sm border-0">
+      <div class="card shadow border-0 h-100">
         <div class="card-body text-center">
-          <h5 class="card-title">👤 Usuarios</h5>
-          <p class="card-text">Gestión de usuarios y roles</p>
-          <a href="#" class="btn btn-outline-secondary w-100">Gestionar Usuarios</a>
+          <div class="mb-3 fs-2">👤</div>
+          <h5 class="card-title">Usuarios</h5>
+          <p class="card-text text-muted">Gestión de usuarios y roles</p>
+          <a href="#" class="btn btn-secondary w-100">Gestionar Usuarios</a>
         </div>
       </div>
     </div>
   </div>
+
+  <!-- Sección de accesos rápidos -->
+  <div class="mt-5">
+    <h4 class="fw-bold mb-3">📌 Accesos Rápidos</h4>
+    <div class="list-group shadow-sm">
+      <a href="{{ url_for('productos') }}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+        Gestionar Inventario <span class="badge bg-primary rounded-pill">Ir</span>
+      </a>
+      <a href="{{ url_for('historial_ventas') }}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+        Revisar Ventas <span class="badge bg-success rounded-pill">Ir</span>
+      </a>
+      <a href="{{ url_for('historial_compras') }}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+        Revisar Compras <span class="badge bg-secondary rounded-pill">Ir</span>
+      </a>
+    </div>
+  </div>
+
 </div>
 {% endblock %}

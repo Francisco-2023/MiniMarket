@@ -3,23 +3,22 @@
 
 {% block content %}
 <div class="container py-5" style="max-width: 800px;">
-  <div class="border p-4 shadow rounded">
-
+  <div class="border p-4 shadow rounded bg-light">
     <!-- Logo y empresa -->
     <div class="d-flex justify-content-between align-items-center mb-4">
-      <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Logo" style="height: 70px;">
+      <img src="{{ url_for('static', filename='image.png') }}" alt="Logo" style="height: 70px;" class="img-fluid">
       <h4 class="text-end">MiniMarket <br><small class="text-muted">Rol de Pago</small></h4>
     </div>
 
     <!-- Datos del empleado -->
-    <div class="mb-3">
-      <strong>Empleado:</strong> {{ rol.empleado }}<br>
-      <strong>Cargo:</strong> {{ rol.cargo }}<br>
-      <strong>Fecha de Pago:</strong> {{ rol.fecha_pago }}
+    <div class="mb-4 p-3 bg-white rounded shadow-sm">
+      <p class="mb-1"><strong>Empleado:</strong> {{ rol.empleado }}</p>
+      <p class="mb-1"><strong>Cargo:</strong> {{ rol.cargo }}</p>
+      <p class="mb-0"><strong>Fecha de Pago:</strong> {{ rol.fecha_pago }}</p>
     </div>
 
     <!-- Tabla de pagos -->
-    <table class="table table-bordered align-middle">
+    <table class="table table-bordered align-middle mb-4">
       <thead class="table-light">
         <tr>
           <th>Concepto</th>
@@ -47,14 +46,14 @@
     </table>
 
     <!-- Firma -->
-    <div class="mt-5 d-flex justify-content-between">
+    <div class="mt-5 d-flex justify-content-between text-center">
       <div>
         ___________________________<br>
-        <strong>Empleado</strong>
+        <strong>Empleado</strong><br><small>Firma</small>
       </div>
       <div>
         ___________________________<br>
-        <strong>Autorizado por</strong>
+        <strong>Autorizado por</strong><br><small>Firma</small>
       </div>
     </div>
   </div>

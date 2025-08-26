@@ -15,10 +15,10 @@
       display: flex;
       flex-direction: column;
       min-height: 100vh;
-      padding-top: 60px; /* navbar fijo */
+      padding-top: 70px; /* Adjusted for larger navbar */
       background-color: #f9fafb;
       color: #1a2e1a;
-      transition: background-color 0.3s ease, color 0.3s ease;
+      transition: all 0.3s ease;
     }
 
     main {
@@ -27,82 +27,133 @@
 
     footer {
       flex-shrink: 0;
-      background-color: #a8d5ba; /* verde claro */
-      color: #1a2e1a; /* verde oscuro */
+      background-color: #a8d5ba;
+      color: #1a2e1a;
       text-align: center;
       padding: 1rem 0;
       box-shadow: 0 -4px 10px rgba(0, 0, 0, 0.05);
-      transition: background-color 0.3s ease, color 0.3s ease;
+      transition: all 0.3s ease;
     }
 
-    /* Navbar modo claro */
+    /* Enhanced Navbar */
     nav.navbar {
-      background-color: #a8d5ba; /* verde claro */
+      background-color: #a8d5ba;
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-      transition: background-color 0.3s ease, color 0.3s ease;
+      transition: all 0.3s ease;
+      padding: 0.5rem 1rem;
     }
 
-    nav.navbar a.navbar-brand,
-    nav.navbar .nav-link,
-    nav.navbar .form-check-label {
-      color: #1a2e1a; /* verde oscuro */
-      transition: color 0.3s ease;
+    nav.navbar .navbar-brand,
+    nav.navbar .nav-link {
+      color: #1a2e1a;
+      transition: all 0.3s ease;
+      font-weight: 500;
     }
 
-    nav.navbar a.navbar-brand:hover,
+    nav.navbar .navbar-brand:hover,
     nav.navbar .nav-link:hover {
-      color: #2e7d32; /* verde más intenso */
+      color: #2e7d32;
+      transform: translateY(-2px);
     }
 
-    /* Logo círculo modo claro */
     .logo-circle {
-      width: 35px;
-      height: 35px;
+      width: 40px;
+      height: 40px;
       border-radius: 50%;
-      background-color: #144d14; /* verde oscuro */
+      background-color: #144d14;
       color: white;
       font-weight: 700;
-      font-size: 1.3rem;
-      user-select: none;
+      font-size: 1.5rem;
       display: flex;
       justify-content: center;
       align-items: center;
-      transition: background-color 0.3s ease, color 0.3s ease;
-      margin-right: 8px;
+      transition: all 0.3s ease;
+      margin-right: 10px;
     }
 
-    /* Modo oscuro activado: azul y texto claro */
+    /* Dropdown Animations */
+    .dropdown-menu {
+      animation: fadeIn 0.3s ease-in-out;
+      background-color: #e6f3ea;
+      border: none;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .dropdown-item {
+      color: #1a2e1a;
+      transition: all 0.2s ease;
+    }
+
+    .dropdown-item:hover {
+      background-color: #c1e4d0;
+      color: #2e7d32;
+      transform: translateX(5px);
+    }
+
+    /* Dark Mode */
     body.navbar-dark-mode {
-      background-color: #ffffff; /* fondo blanco */
+      background-color: #ffffff;
       color: #1a1a1a;
     }
 
     body.navbar-dark-mode nav.navbar {
-      background-color: #1e40af; /* azul */
+      background-color: #1e40af;
       box-shadow: 0 4px 12px rgba(30, 64, 175, 0.7);
     }
 
-    body.navbar-dark-mode nav.navbar a.navbar-brand,
-    body.navbar-dark-mode nav.navbar .nav-link,
-    body.navbar-dark-mode nav.navbar .form-check-label {
-      color: #d1d5db !important; /* azul claro */
-      transition: color 0.3s ease;
+    body.navbar-dark-mode .navbar-brand,
+    body.navbar-dark-mode .nav-link,
+    body.navbar-dark-mode .form-check-label {
+      color: #d1d5db !important;
     }
 
-    body.navbar-dark-mode nav.navbar a.navbar-brand:hover,
-    body.navbar-dark-mode nav.navbar .nav-link:hover {
-      color: #bfdbfe !important; /* azul más claro */
+    body.navbar-dark-mode .navbar-brand:hover,
+    body.navbar-dark-mode .nav-link:hover {
+      color: #bfdbfe !important;
     }
 
     body.navbar-dark-mode .logo-circle {
-      background-color: #1e40af; /* azul */
+      background-color: #1e40af;
       color: #e0e7ff;
     }
 
+    body.navbar-dark-mode .dropdown-menu {
+      background-color: #2b5cb4;
+    }
+
+    body.navbar-dark-mode .dropdown-item {
+      color: #d1d5db;
+    }
+
+    body.navbar-dark-mode .dropdown-item:hover {
+      background-color: #3b65c0;
+      color: #bfdbfe;
+    }
+
     body.navbar-dark-mode footer {
-      background-color: #1e40af; /* azul */
-      color: #d1d5db; /* texto claro */
+      background-color: #1e40af;
+      color: #d1d5db;
       box-shadow: 0 -4px 10px rgba(30, 64, 175, 0.5);
+    }
+
+    /* Submenu Structure */
+    .nav-item.dropdown .dropdown-menu {
+      min-width: 200px;
+    }
+
+    .nav-item.dropdown .dropdown-item {
+      padding: 0.5rem 1rem;
+    }
+
+    .nav-item.dropdown .dropdown-menu .dropdown-menu {
+      margin-left: 100%;
+      margin-top: -1rem;
     }
   </style>
 
@@ -111,7 +162,7 @@
 
 <body>
 
-  <!-- NAVBAR -->
+  <!-- Enhanced Navbar with Submenus -->
   <nav class="navbar navbar-expand-lg fixed-top py-2 shadow-sm">
     <div class="container">
       <a class="navbar-brand d-flex align-items-center" href="{{ url_for('dashboard') }}">
@@ -129,23 +180,39 @@
           <li class="nav-item">
             <a class="nav-link" href="{{ url_for('dashboard') }}"><i class="bi bi-speedometer2 me-1"></i> Dashboard</a>
           </li>
-          <li class="nav-item">
-            <a class="nav-link" href="{{ url_for('productos') }}"><i class="bi bi-box-seam me-1"></i> Productos</a>
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" id="productosMenu" role="button" data-bs-toggle="dropdown"
+              aria-expanded="false"><i class="bi bi-box-seam me-1"></i> Productos</a>
+            <ul class="dropdown-menu" aria-labelledby="productosMenu">
+              <li><a class="dropdown-item" href="{{ url_for('productos') }}">Nuevo Producto</a></li>
+            </ul>
+          </li>
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" id="ventasMenu" role="button" data-bs-toggle="dropdown"
+              aria-expanded="false"><i class="bi bi-cart-check me-1"></i> Ventas</a>
+            <ul class="dropdown-menu" aria-labelledby="ventasMenu">
+              <li><a class="dropdown-item" href="{{ url_for('ventas') }}">Registro Ventas</a></li>
+              <li><a class="dropdown-item" href="{{ url_for('historial_ventas') }}">Histórico Ventas</a></li>
+            </ul>
+          </li>
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" id="comprasMenu" role="button" data-bs-toggle="dropdown"
+              aria-expanded="false"><i class="bi bi-cart-plus me-1"></i> Compras</a>
+            <ul class="dropdown-menu" aria-labelledby="comprasMenu">
+              <li><a class="dropdown-item" href="{{ url_for('compras') }}">Registro Compras</a></li>
+              <li><a class="dropdown-item" href="{{ url_for('historial_compras') }}">Histórico Compras</a></li>
+            </ul>
+          </li>
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" id="finanzasMenu" role="button" data-bs-toggle="dropdown"
+              aria-expanded="false"><i class="bi bi-cash-coin me-1"></i> Finanzas</a>
+            <ul class="dropdown-menu" aria-labelledby="finanzasMenu">
+              <li><a class="dropdown-item" href="{{ url_for('resumen_financiero') }}">Resumen Financiero</a></li>
+              <li><a class="dropdown-item" href="{{ url_for('roles_pago') }}">Roles de Pago</a></li>
+            </ul>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="{{ url_for('ventas') }}"><i class="bi bi-box-seam me-1"></i> Ventas</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="{{ url_for('compras') }}"><i class="bi bi-box-seam me-1"></i> Compras</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="{{ url_for('resumen_financiero') }}"><i class="bi bi-box-seam me-1"></i> Finanzas</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="{{ url_for('ver_facturas') }}"><i class="bi bi-box-seam me-1"></i> Facturas</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="{{ url_for('roles_pago') }}"><i class="bi bi-box-seam me-1"></i> Roles</a>
+            <a class="nav-link" href="{{ url_for('ver_facturas') }}"><i class="bi bi-receipt me-1"></i> Facturas</a>
           </li>
 
           <li class="nav-item d-none d-lg-block">
@@ -203,10 +270,9 @@
     setInterval(updateClock, 1000);
     updateClock();
 
-    // Control de tema (navbar y footer verde / azul)
+    // Control de tema
     const themeToggle = document.getElementById('themeSwitch');
     const body = document.body;
-    // Estado guardado
     const isDark = localStorage.getItem('dark-mode') === 'true';
     if (isDark) {
       body.classList.add('navbar-dark-mode');

@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, session, url_for
+from flask import Flask, render_template, request, redirect, session, url_for, abort
 import firebase_admin
 from firebase_admin import credentials, firestore
 import pyrebase
@@ -646,6 +646,10 @@ def ventas():
 
     return render_template('ventas.html', productos=productos)
 
+import logging
+# Configure logging
+logging.basicConfig(level=logging.DEBUG)
+
 @app.route("/roles-pago")
 def roles_pago():
     roles_ref = db.collection("roles_pagos")
@@ -654,11 +658,26 @@ def roles_pago():
     roles = []
     for doc in docs:
         data = doc.to_dict()
-        data["id"] = doc.id
-        roles.append(data)
+        if data:  # Ensure data exists
+            data["id"] = doc.id  # Explicitly add id
+            roles.append(data)
+        else:
+            logging.warning(f"Empty document found with ID: {doc.id}")
 
+    logging.debug(f"Roles data: {roles}")  # Debug output
     return render_template("roles_pago.html", roles=roles)
 
+@app.route("/ver_rol/<string:rol_id>")
+def view_rol_detail(rol_id):
+    roles_ref = db.collection("roles_pagos")
+    doc = roles_ref.document(rol_id).get()
+
+    if doc.exists:
+        rol = doc.to_dict()
+        rol["id"] = doc.id
+        return render_template("roles_pago_detalle.html", rol=rol)
+    else:
+        abort(404, description="Rol de pago no encontrado")
 
 @app.route("/roles-pago/crear", methods=["POST"])
 def crear_rol_pago():
@@ -869,18 +888,6 @@ def historial_ventas():
                            resumen_dia=resumen_dia,
                            resumen_mes=resumen_mes,
                            resumen_anio=resumen_anio)
-
-
-@app.route('/roles/ver/<rol_id>')
-def ver_rol(rol_id):
-    rol_doc = db.collection('roles_pago').document(rol_id).get()
-    if rol_doc.exists:
-        rol = rol_doc.to_dict()
-        rol['id'] = rol_doc.id
-        return render_template('ver_rol.html', rol=rol)
-    else:
-        flash("Rol de pago no encontrado.", "danger")
-        return redirect(url_for('roles_pago'))
 
 
 # INICIAR APP

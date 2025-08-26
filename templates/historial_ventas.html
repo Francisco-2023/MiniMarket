@@ -3,9 +3,9 @@
 
 {% block content %}
 <div class="container py-4">
-  <h2 class="mb-4 text-primary">📊 Historial de Ventas</h2>
+  <h2 class="mb-4 text-primary fw-bold text-center">📊 Historial de Ventas</h2>
 
-  <ul class="nav nav-tabs" id="ventasTabs" role="tablist">
+  <ul class="nav nav-tabs justify-content-center mb-4" id="ventasTabs" role="tablist">
     <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#dia">Por Día</button></li>
     <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#mes">Por Mes</button></li>
     <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#anio">Por Año</button></li>
@@ -14,44 +14,120 @@
   <div class="tab-content mt-4">
     <!-- Día -->
     <div class="tab-pane fade show active" id="dia">
-      {% for fecha, datos in resumen_dia.items() %}
-        <div class="card mb-3">
-          <div class="card-header bg-light">
-            <strong>{{ fecha }}</strong> | Total: ${{ '%.2f'|format(datos.total) }} | Productos: {{ datos.cantidad }}
+      {% if resumen_dia|length > 0 %}
+        {% for fecha, datos in resumen_dia.items() %}
+          <div class="card mb-4 shadow-sm">
+            <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+              <span>Ventas del {{ fecha }}</span>
+              <span class="badge bg-success">Total: ${{ '%.2f'|format(datos.total) }} | Productos: {{ datos.cantidad }}</span>
+            </div>
+            <div class="card-body">
+              <div class="table-responsive">
+                <table class="table table-bordered table-hover align-middle">
+                  <thead class="table-light">
+                    <tr>
+                      <th>ID Venta</th>
+                      <th>Cliente</th>
+                      <th>Total ($)</th>
+                      <th>Detalle</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {% for venta in datos.ventas %}
+                      <tr>
+                        <td>{{ venta.id }}</td>
+                        <td>{{ venta.usuario }}</td>
+                        <td class="text-success fw-bold">${{ '%.2f'|format(venta.total) }}</td>
+                        <td>
+                          <button class="btn btn-sm btn-info" data-bs-toggle="collapse" data-bs-target="#detalleVenta{{ venta.id }}">Ver detalle</button>
+                          <div class="collapse mt-2" id="detalleVenta{{ venta.id }}">
+                            <ul class="list-group list-group-flush">
+                              {% for item in venta.detalle %}
+                                <li class="list-group-item d-flex justify-content-between">
+                                  <span><strong>{{ item.nombre }}</strong></span>
+                                  <span>Cant: {{ item.cantidad }} | P. Unit: ${{ '%.2f'|format(item.precio_unitario) }} | Sub: ${{ '%.2f'|format(item.subtotal) }}</span>
+                                </li>
+                              {% endfor %}
+                            </ul>
+                          </div>
+                        </td>
+                      </tr>
+                    {% endfor %}
+                  </tbody>
+                </table>
+              </div>
+            </div>
           </div>
-          <div class="card-body">
-            <ul>
-              {% for venta in datos.ventas %}
-                <li>
-                  ID: {{ venta.id }} | Cliente: {{ venta.usuario }} | Total: ${{ venta.total }}
-                </li>
-              {% endfor %}
-            </ul>
-          </div>
-        </div>
-      {% endfor %}
+        {% endfor %}
+      {% else %}
+        <p class="text-center text-muted">No hay datos disponibles para este período.</p>
+      {% endif %}
     </div>
 
     <!-- Mes -->
     <div class="tab-pane fade" id="mes">
-      {% for mes, datos in resumen_mes.items() %}
-        <div class="card mb-3">
-          <div class="card-header bg-light">
-            <strong>{{ mes }}</strong> | Total: ${{ '%.2f'|format(datos.total) }} | Productos: {{ datos.cantidad }}
+      {% if resumen_mes|length > 0 %}
+        <div class="card shadow-sm">
+          <div class="card-header bg-primary text-white">Resumen por Mes</div>
+          <div class="card-body">
+            <div class="table-responsive">
+              <table class="table table-striped table-hover align-middle">
+                <thead class="table-light">
+                  <tr>
+                    <th>Mes</th>
+                    <th>Total ($)</th>
+                    <th>Productos</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for mes, datos in resumen_mes.items() %}
+                    <tr>
+                      <td class="align-middle"><strong>{{ mes }}</strong></td>
+                      <td class="align-middle text-success fw-bold">${{ '%.2f'|format(datos.total) }}</td>
+                      <td class="align-middle">{{ datos.cantidad }}</td>
+                    </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
-      {% endfor %}
+      {% else %}
+        <p class="text-center text-muted">No hay datos disponibles para este período.</p>
+      {% endif %}
     </div>
 
     <!-- Año -->
     <div class="tab-pane fade" id="anio">
-      {% for anio, datos in resumen_anio.items() %}
-        <div class="card mb-3">
-          <div class="card-header bg-light">
-            <strong>{{ anio }}</strong> | Total: ${{ '%.2f'|format(datos.total) }} | Productos: {{ datos.cantidad }}
+      {% if resumen_anio|length > 0 %}
+        <div class="card shadow-sm">
+          <div class="card-header bg-primary text-white">Resumen por Año</div>
+          <div class="card-body">
+            <div class="table-responsive">
+              <table class="table table-striped table-hover align-middle">
+                <thead class="table-light">
+                  <tr>
+                    <th>Año</th>
+                    <th>Total ($)</th>
+                    <th>Productos</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for anio, datos in resumen_anio.items() %}
+                    <tr>
+                      <td class="align-middle"><strong>{{ anio }}</strong></td>
+                      <td class="align-middle text-success fw-bold">${{ '%.2f'|format(datos.total) }}</td>
+                      <td class="align-middle">{{ datos.cantidad }}</td>
+                    </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
-      {% endfor %}
+      {% else %}
+        <p class="text-center text-muted">No hay datos disponibles para este período.</p>
+      {% endif %}
     </div>
   </div>
 </div>
