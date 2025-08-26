@@ -37,6 +37,17 @@ firebase_admin.initialize_app(cred, {
 })
 db = firestore.client()
 
+from flask_wtf import FlaskForm
+from wtforms import StringField, PasswordField, EmailField, SubmitField
+from wtforms.validators import DataRequired, Email, EqualTo, Length
+# Flask-WTF Form for Registration
+class RegisterForm(FlaskForm):
+    nombre = StringField('Nombre', validators=[DataRequired(), Length(min=2, max=50)])
+    email = EmailField('Correo Electrónico', validators=[DataRequired(), Email()])
+    password = PasswordField('Contraseña', validators=[DataRequired(), Length(min=6)])
+    confirm_password = PasswordField('Confirmar Contraseña', validators=[DataRequired(), EqualTo('password')])
+    submit = SubmitField('Registrarse')
+
 # RUTA RAÍZ
 @app.route('/')
 def index():
@@ -45,59 +56,58 @@ def index():
 # LOGIN
 @app.route('/login', methods=['GET', 'POST'])
 def login():
-    error = ''
     if request.method == 'POST':
-        email = request.form['email']
-        password = request.form['password']
+        email = request.form.get('email')
+        password = request.form.get('password')
+        if not email or not password:
+            flash('Por favor, completa todos los campos.', 'error')
+            return render_template('login.html')
         try:
             user = auth.sign_in_with_email_and_password(email, password)
             session['usuario'] = email
+            flash('Inicio de sesión exitoso.', 'success')
             return redirect(url_for('dashboard'))
         except Exception as e:
             mensaje = str(e)
             if 'INVALID_PASSWORD' in mensaje:
-                error = 'La contraseña es incorrecta.'
+                flash('La contraseña es incorrecta.', 'error')
             elif 'EMAIL_NOT_FOUND' in mensaje:
-                error = 'No existe una cuenta con este correo.'
+                flash('No existe una cuenta con este correo.', 'error')
             else:
-                error = 'Credenciales inválidas. Intenta nuevamente.'
-    return render_template('login.html', error=error)
+                flash('Credenciales inválidas. Intenta nuevamente.', 'error')
+    return render_template('login.html')
 
 # REGISTRO
 @app.route('/register', methods=['GET', 'POST'])
 def register():
-    error = ''
-    success = ''
-    if request.method == 'POST':
-        email = request.form['email']
-        password = request.form['password']
-        nombre = request.form['nombre']
+    form = RegisterForm()
+    if form.validate_on_submit():
         try:
             # Crear usuario en Firebase Auth
-            user = auth.create_user_with_email_and_password(email, password)
-
+            user = auth.create_user_with_email_and_password(form.email.data, form.password.data)
             # Guardar info en Firestore
-            db.collection('usuarios').document(email).set({
-                'email': email,
-                'nombre': nombre,
+            db.collection('usuarios').document(form.email.data).set({
+                'email': form.email.data,
+                'nombre': form.nombre.data,
                 'rol': 'usuario'
             })
-
-            success = 'Usuario registrado correctamente.'
+            flash('Usuario registrado correctamente.', 'success')
+            return redirect(url_for('login'))
         except Exception as e:
             mensaje = str(e)
             if 'EMAIL_EXISTS' in mensaje:
-                error = 'El correo ya está registrado.'
+                flash('El correo ya está registrado.', 'error')
             elif 'WEAK_PASSWORD' in mensaje:
-                error = 'La contraseña es muy débil. Usa al menos 6 caracteres.'
+                flash('La contraseña es muy débil. Usa al menos 6 caracteres.', 'error')
             else:
-                error = 'Ocurrió un error durante el registro. Intenta nuevamente.'
-    return render_template('register.html', error=error, success=success)
+                flash('Ocurrió un error durante el registro. Intenta nuevamente.', 'error')
+    return render_template('register.html', form=form)
 
 # CERRAR SESIÓN
 @app.route('/logout')
 def logout():
     session.clear()
+    flash('Sesión cerrada correctamente.', 'success')
     return redirect(url_for('login'))
 
 @app.route('/recuperar_password', methods=['GET', 'POST'])
